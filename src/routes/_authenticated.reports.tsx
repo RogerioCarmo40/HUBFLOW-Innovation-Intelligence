@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { exportReportToPDF } from "@/lib/pdfExport";
 import { format } from "date-fns";
 import { Lightbulb, CheckCircle2, Clock, Users, Download } from "lucide-react";
 import {
@@ -76,58 +77,62 @@ function Reports() {
           <Button
             variant="outline"
             className="gap-1.5"
-            onClick={() => toast.info("PDF export will be available when connected to the backend.")}
+            onClick={() => exportReportToPDF('meu-relatorio')}
           >
-            <Download className="h-4 w-4" /> Export PDF
+            <Download className="h-4 w-4" /> 
+            Export PDF
           </Button>
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Total Ideas" value={ideas.length} icon={Lightbulb} tone="blue" />
-        <StatCard label="Approval Rate" value={`${approvalRate}%`} icon={CheckCircle2} tone="green" />
-        <StatCard label="Avg Review Time (days)" value={7} icon={Clock} tone="amber" />
-        <StatCard label="Active Contributors" value={new Set(ideas.map((i) => i.author)).size} icon={Users} tone="gray" />
-      </div>
+      {/* Container principal adicionado aqui com o ID para exportação */}
+      <div id="meu-relatorio">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard label="Total Ideas" value={ideas.length} icon={Lightbulb} tone="blue" />
+          <StatCard label="Approval Rate" value={`${approvalRate}%`} icon={CheckCircle2} tone="green" />
+          <StatCard label="Avg Review Time (days)" value={7} icon={Clock} tone="amber" />
+          <StatCard label="Active Contributors" value={new Set(ideas.map((i) => i.author)).size} icon={Users} tone="gray" />
+        </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <ChartCard title="Ideas Trend Over Time" className="lg:col-span-2">
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={trendData} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="var(--color-muted-foreground)" />
-              <YAxis tick={{ fontSize: 12 }} stroke="var(--color-muted-foreground)" allowDecimals={false} />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Line type="monotone" dataKey="ideas" stroke="var(--color-chart-1)" strokeWidth={3} dot={{ r: 4 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartCard>
+        <div className="mt-6 grid gap-6 lg:grid-cols-3">
+          <ChartCard title="Ideas Trend Over Time" className="lg:col-span-2">
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={trendData} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="var(--color-muted-foreground)" />
+                <YAxis tick={{ fontSize: 12 }} stroke="var(--color-muted-foreground)" allowDecimals={false} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Line type="monotone" dataKey="ideas" stroke="var(--color-chart-1)" strokeWidth={3} dot={{ r: 4 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartCard>
 
-        <ChartCard title="Status Distribution">
-          <ResponsiveContainer width="100%" height={280}>
-            <PieChart>
-              <Pie data={statusData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={90} paddingAngle={2}>
-                {statusData.map((entry) => (
-                  <Cell key={entry.name} fill={STATUS_COLORS[entry.name] ?? "var(--color-chart-4)"} />
-                ))}
-              </Pie>
-              <Tooltip contentStyle={tooltipStyle} />
-              <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartCard>
+          <ChartCard title="Status Distribution">
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie data={statusData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={90} paddingAngle={2}>
+                  {statusData.map((entry) => (
+                    <Cell key={entry.name} fill={STATUS_COLORS[entry.name] ?? "var(--color-chart-4)"} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartCard>
 
-        <ChartCard title="Monthly Ideas Submitted" className="lg:col-span-3">
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={monthlyData} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="var(--color-muted-foreground)" />
-              <YAxis tick={{ fontSize: 12 }} stroke="var(--color-muted-foreground)" allowDecimals={false} />
-              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--color-muted)" }} />
-              <Bar dataKey="count" fill="var(--color-chart-1)" radius={[6, 6, 0, 0]} maxBarSize={48} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
+          <ChartCard title="Monthly Ideas Submitted" className="lg:col-span-3">
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={monthlyData} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="var(--color-muted-foreground)" />
+                <YAxis tick={{ fontSize: 12 }} stroke="var(--color-muted-foreground)" allowDecimals={false} />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--color-muted)" }} />
+                <Bar dataKey="count" fill="var(--color-chart-1)" radius={[6, 6, 0, 0]} maxBarSize={48} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </div>
       </div>
     </>
   );
